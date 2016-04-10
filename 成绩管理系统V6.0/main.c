@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
         switch (choice)
         {
             case 1:
-                n=ReadScore(score,num,name);
+                n=ReadScore(stu);
                 break;
             case 2:
                 AverforCourse(stu, n, sumc,averc);
@@ -160,7 +160,7 @@ void AverforCourse(STU stu[],int n,int sumc[],float averc[N])
     {
         sumc[i]=0;
         for (int j=0; j<n; j++) {
-            sumc[i]+=stu[j].score[j];
+            sumc[i]+=stu[j].score[i];
         }
         averc[i]=(float)sumc[i]/n;
     }
@@ -361,7 +361,7 @@ int ReadfromFile(STU stu[])
 {
     int i;
     FILE *fp;
-    if ((fp=fopen("/Users/lizhan666/text", "r"))==NULL) {
+    if ((fp=fopen("/Users/lizhan666/desktop/txt.txt", "r"))==NULL) {
         printf("Failure to open text!\n");
         exit(0);
     }

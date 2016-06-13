@@ -32,10 +32,10 @@ void NumSwap(long *x,long *y);
 void NameSwap(char str1[],char str2[]);
 void NumSort(STU stu[],int n);
 void NameSort(STU stu[],int n);
-int NumSearch(STU stu[],long searchNum,int n);
-int NameSearch(STU stu[],char searchName[],int n);
+void NumSearch(STU stu[],int n);
+void NameSearch(STU stu[],int n);
 void Statistics(STU stu[],int n);
-void PrintScore(STU stu[],int n,int sumc[],float averc[]);
+void PrintScore(STU stu[],int n);
 void WritetoFile(STU stu[],int n);
 int ReadfromFile(STU stu[]);
 
@@ -43,14 +43,14 @@ int ReadfromFile(STU stu[]);
 int main(int argc, char* argv[])
 {
     STU stu[N];
-    int n = 0,choice,pos1,pos2,sumc[COURSE];
-    long searchNum;
-    float averc[N];
-    char searchName[MAX_LEN];
+    int n = 0,choice,sumc[COURSE];
+    float averc[COURSE];
     do{
+        printf("学生成绩管理系统\n");
+        printf("#####################\n");
         printf("1.Input record\n");
-        printf("2.Caculate total and average score of ever course\n");
-        printf("3.Caculate total and average score of ever student\n");
+        printf("2.Caculate total and average score of every course\n");
+        printf("3.Caculate total and average score of every student\n");
         printf("4.Sort in descending order by score\n");
         printf("5.Sort in ascending order by score\n");
         printf("6.Sort in ascending order by number\n");
@@ -62,8 +62,9 @@ int main(int argc, char* argv[])
         printf("12.Write to a file\n");
         printf("13.Read from a file\n");
         printf("0.Exit\n");
-        printf("Please enter your choice:");
+        printf("Please enter your choice:\n");
         scanf("%d",&choice);
+        while (getchar()!='\n');
         switch (choice)
         {
             case 1:
@@ -88,38 +89,22 @@ int main(int argc, char* argv[])
                 NameSort(stu, n);
                 break;
             case 8:
-                printf("Input the searching ID:");
-                scanf("%ld",&searchNum);
-                pos1=NumSearch(stu,searchNum,n);
-                if (pos1 != -1) {
-                    printf("The name is %s\n",stu[pos1].name);
-                    printf("The score is:\n");
-                    for (int i=0; i<COURSE; i++) {
-                        printf("%d\n",stu[pos1].score[i]);
-                    }
-                }
-                else
-                    printf("Not found\n");
+                NumSearch(stu, n);
                 break;
             case 9:
-                printf("Input the searching Name:");
-                scanf("%s",searchName);
-                pos2=NameSearch(stu, searchName, n);
-                if (pos2 != -1) {
-                    printf("The IDnumber is %ld\n",stu[pos2].studentID);
-                    printf("The score is:\n");
-                    for (int i=0; i<COURSE; i++) {
-                        printf("%d\n",stu[pos2].score[i]);
-                    }
-                }
-                else
-                    printf("Not found\n");
+                NameSearch(stu,n);
                 break;
             case 10:
                 Statistics(stu,n);
                 break;
             case 11:
-                PrintScore(stu, n, sumc, averc);
+                PrintScore(stu, n);
+                break;
+            case 12:
+                WritetoFile(stu, n);
+                break;
+            case 13:
+                ReadfromFile(stu);
                 break;
             case 0:
                 exit(0);
@@ -134,27 +119,24 @@ int main(int argc, char* argv[])
 
 int ReadScore(STU stu[])
 {
-    int i=-1,j=0;
+    int i=0,j=0;
+    char choose;
     printf("Input student's name ,ID and six course score:\n");
     do {
-        i++;
         scanf("%s",stu[i].name);
-        if (strcmp(stu[i].name, "stop")==0) {
-            return i;
-        }
         scanf("%ld",&stu[i].studentID);
         for ( j=0; j<COURSE; j++) {
             scanf("%d",&stu[i].score[j]);
-            if (stu[i].score[j]<0 || stu[i].studentID<=0) {
-                return i;
-            }
         }
-    } while (stu[i].studentID>0);
+        printf("Do you want to input again?\n");
+        scanf(" %c",&choose);
+        i++;
+    } while (choose == 'y'|| choose == 'Y');
     return i;
 }
 
 
-void AverforCourse(STU stu[],int n,int sumc[],float averc[N])
+void AverforCourse(STU stu[],int n,int sumc[],float averc[])
 {
     for(int i=0;i<COURSE;i++)
     {
@@ -164,6 +146,11 @@ void AverforCourse(STU stu[],int n,int sumc[],float averc[N])
         }
         averc[i]=(float)sumc[i]/n;
     }
+    printf("AverOfCourse:");
+    for (int i=0; i<COURSE; i++) {
+        printf("%-5.2f\t",averc[i]);
+    }
+    printf("\n");
 }
 
 void AverforStudent(STU stu[],int n)
@@ -175,6 +162,10 @@ void AverforStudent(STU stu[],int n)
         }
         stu[i].aver=(float)stu[i].sum/COURSE;
     }
+    for (int i=0; i<n; i++) {
+        printf("%-5.2f\t",stu[i].aver);
+    }
+    printf("\n");
 }
 
 int Ascending(int a,int b)
@@ -191,6 +182,13 @@ int Descending(int a,int b)
 
 void SelectionSort(STU stu[],int n,int (*compare)(int a,int b))
 {
+    for (int i=0; i<n; i++) {
+        stu[i].sum=0;
+        for (int j=0; j<COURSE; j++) {
+            stu[i].sum+=stu[i].score[j];
+        }
+        stu[i].aver=(float)stu[i].sum/COURSE;
+    }
     for (int i=0; i<n-1; i++)
     {
         int k=i;
@@ -202,11 +200,16 @@ void SelectionSort(STU stu[],int n,int (*compare)(int a,int b))
         }
         if (k!=i) {
             ScoreSwap(&stu[i].sum, &stu[k].sum);
+            for (int m = 0 ; m<n; m++) {
+                ScoreSwap(&stu[i].score[m],&stu[k].score[m]);
+            }
             NumSwap(&stu[i].studentID,&stu[k].studentID);
             NameSwap(stu[i].name, stu[k].name);
         }
     }
+    PrintScore(stu, n);
 }
+
 
 void ScoreSwap(int *x,int *y)
 {
@@ -225,6 +228,8 @@ void NumSwap(long *x,long *y)
     *y=temp;
     
 }
+
+
 void NameSwap(char str1[],char str2[])
 {
     char temp[MAX_LEN];
@@ -251,8 +256,8 @@ void NumSort(STU stu[],int n)
             NameSwap(stu[i].name, stu[k].name);
         }
     }
+    PrintScore(stu, n);
 }
-
 
 
 void NameSort(STU stu[],int n)
@@ -272,26 +277,53 @@ void NameSort(STU stu[],int n)
             NameSwap(stu[i].name, stu[k].name);
         }
     }
+    PrintScore(stu, n);
 }
 
-int NumSearch(STU stu[],long searchNum,int n)
+
+void NumSearch(STU stu[], int n)
 {
+    int find = 0;
+    long searchNum;
+    printf("Input the searching ID:");
+    scanf("%ld",&searchNum);
     for (int i=0; i<n; i++)
     {
         if (stu[i].studentID==searchNum) {
-            return i;
+            find = 1;
+            printf("The name is %s\n",stu[i].name);
+            for (int j =0; j<COURSE; j++) {
+                printf("%d\t",stu[i].score[j]);
+            }
+            printf("\n");
         }
     }
-    return -1;
+    if (!find) {
+        printf("Not Found\n");
+    }
 }
 
 
-int NameSearch(STU stu[],char searchName[],int n)
+void NameSearch(STU stu[],int n)
 {
+    int find = 0;
+    char searchName[MAX_LEN];
+    printf("Input the searching name:");
+    scanf("%s",searchName);
     for (int i=0; i<n; i++) {
-        if(!strcmp(stu[i].name, searchName)) return i;
+        if (strcmp(stu[i].name, searchName)==0) {
+            find = 1;
+            printf("The stuNumber is %ld\n",stu[i].studentID);
+            printf("The score is:");
+            for (int j =0; j<COURSE; j++) {
+                printf("%d\t",stu[i].score[j]);
+            }
+            printf("\n");
+        }
     }
-    return -1;
+    if (!find) {
+        printf("Not Found\n");
+    }
 }
 
 
@@ -311,45 +343,33 @@ void Statistics(STU stu[],int n)
     }
     for (int i=0; i<COURSE; i++) {
         printf("%d:\n",i+1);
-        printf("The excellent(90-100) rate is %f\n",(float)excellent[i]/n);
-        printf("The good(80-89) rate is %f\n",(float)good[i]/n);
-        printf("The medium(70-79) rate is %f\n",(float)medium[i]/n);
-        printf("The pass(60-69) rate is %f\n",(float)pass[i]/n);
-        printf("The fail(<60) rate is %f\n",(float)fail[i]/n);
+        printf("The excellent(90-100) rate is %.2f%%\n",(float)excellent[i]/n*100);
+        printf("The good(80-89) rate is %.2f%%\n",(float)good[i]/n*100);
+        printf("The medium(70-79) rate is %.2f%%\n",(float)medium[i]/n*100);
+        printf("The pass(60-69) rate is %.2f%%\n",(float)pass[i]/n*100);
+        printf("The fail(<60) rate is %.2f%%\n",(float)fail[i]/n*100);
+    }
+}
+
+
+void PrintScore(STU stu[],int n)
+{
+    for(int i=0;i<n;i++)
+    {
+        printf("%s\t",stu[i].name);
+        printf("%-11ld\t",stu[i].studentID);
+        for (int j=0; j<COURSE; j++) {
+            printf("%-4d\t",stu[i].score[j]);
+        }
         printf("\n");
     }
 }
 
 
-
-
-void PrintScore(STU stu[],int n,int sumc[],float averc[])
-{
-    printf("NAME\t STUDENT'S ID\t 1\t 2\t 3\t 4\t 5\t 6\t SUM\t AVER\n");
-    for(int i=0;i<n;i++)
-    {
-        printf("%s\t",stu[i].name);
-        printf("%11ld\t",stu[i].studentID);
-        for (int j=0; j<COURSE; j++) {
-            printf("%4d",stu[i].score[j]);
-        }
-        printf("%4d\t%5.1f\n",stu[i].sum,stu[i].aver);
-    }
-    printf("SumofCourse\t");
-    for (int i=0; i<COURSE; i++) {
-        printf("%4d\t",sumc[i]);
-    }
-    printf("\nAverofCourse\t");
-    for (int i=0; i<COURSE; i++) {
-        printf("%4.1f\t",averc[i]);
-    }
-    printf("\n");
-}
-
 void WritetoFile(STU stu[],int n)
 {
     FILE *fp;
-    if ((fp=fopen("/Users/lizhan666/text", "w"))==NULL) {
+    if ((fp=fopen("save.txt", "w"))==NULL) {
         printf("Failure to open text!\n");
         exit(0);
     }
@@ -357,11 +377,12 @@ void WritetoFile(STU stu[],int n)
     fclose(fp);
 }
 
+
 int ReadfromFile(STU stu[])
 {
-    int i;
+    int i = 0;
     FILE *fp;
-    if ((fp=fopen("/Users/lizhan666/desktop/txt.txt", "r"))==NULL) {
+    if ((fp=fopen("save.txt", "r"))==NULL) {
         printf("Failure to open text!\n");
         exit(0);
     }
@@ -369,6 +390,6 @@ int ReadfromFile(STU stu[])
         fread(&stu[i], sizeof(STU), 1, fp);
     }
     fclose(fp);
-    printf("Total students is %d.\n",i-1);
-    return i-1;
+    printf("Total students is %d.\n",i+1);
+    return i+1;
 }

@@ -1,2 +1,7 @@
-# Grade-management-system
-This is homework of c
+#学生成绩管理系统
+###这是大一上时写的平时作业
+
+###完成情况：
+*  不能实现连续读入数据
+*  交互待完善
+*  健壮性需加强

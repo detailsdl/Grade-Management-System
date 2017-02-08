@@ -20,7 +20,7 @@ struct student
     int sum;
     float aver;
 };
-typedef struct student STU;
+typedef struct student STU; //别名STU 等价于struct studebt 
 int ReadScore(STU stu[]);
 void AverforCourse(STU stu[],int n,int sumc[],float averc[N]);
 void AverforStudent(STU stu[],int n);
